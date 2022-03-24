@@ -1,0 +1,29 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+sourceCompatibility = 17
+targetCompatibility = 17
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+gradlePlugin {
+    plugins {
+        compilerConventionsPlugin {
+            id = "com.antscodecommunity.build.compile"
+            implementationClass = "com.antscodecommunity.build.compile.CompilerConventionsPlugin"
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,81 @@
+plugins {
+    id 'io.spring.nohttp' version '0.0.10'
+    /* https://docs.spring.io/dependency-management-plugin/docs/current-SNAPSHOT/reference/html/#introduction */
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE' apply false
+}
+
+configure(allprojects) { project ->
+    apply plugin: "io.spring.dependency-management"
+    group 'com.antscodecommunity'
+    dependencyManagement {
+        imports {
+            mavenBom 'org.springframework:spring-framework-bom:5.3.17'
+            mavenBom 'org.junit:junit-bom:5.8.2'
+        }
+        dependencies {
+            dependency "org.assertj:assertj-core:3.22.0"
+            dependencySet(group: 'org.mockito', version: '4.4.0') {
+                entry('mockito-core') {
+                    exclude group: "org.hamcrest", name: "hamcrest-core"
+                }
+                entry 'mockito-junit-jupiter'
+            }
+            dependency "io.mockk:mockk:1.12.1"
+            dependency "org.assertj:assertj-core:3.22.0"
+        }
+        generatedPomCustomization {
+            enabled = false
+        }
+        resolutionStrategy {
+            cacheChangingModulesFor 0, "seconds"
+        }
+        repositories {
+            mavenCentral()
+        }
+    }
+    configurations.all {
+        resolutionStrategy {
+            cacheChangingModulesFor 0, "seconds"
+            cacheDynamicVersionsFor 0, "seconds"
+        }
+    }
+}
+
+configure([rootProject] + subprojects) {
+    apply plugin: "java"
+    apply plugin: "com.antscodecommunity.build.compile"
+    dependencies {
+        testImplementation 'org.springframework:spring-test'
+        testImplementation("org.junit.jupiter:junit-jupiter-api")
+        testImplementation("org.junit.jupiter:junit-jupiter-params")
+        testImplementation("org.junit.platform:junit-platform-suite-api")
+        testImplementation("org.mockito:mockito-core")
+        testImplementation("org.mockito:mockito-junit-jupiter")
+        testImplementation("io.mockk:mockk")
+        testImplementation("org.assertj:assertj-core")
+        // Pull in the latest JUnit 5 Launcher API to ensure proper support in IDEs.
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+        testRuntimeOnly("org.junit.platform:junit-platform-suite-engine")
+    }
+    test {
+        useJUnitPlatform()
+        systemProperty("java.awt.headless", "true")
+    }
+}
+
+configure(rootProject) {
+    apply plugin: "io.spring.nohttp"
+    description 'Spring Framework Explore'
+    defaultTasks 'build'
+    nohttp {
+        allowlistFile = project.file("src/nohttp/allowlist.lines")
+        source.exclude "**/bin/**"
+        source.exclude "**/build/**"
+        source.exclude "**/out/**"
+        source.exclude "**/target/**"
+    }
+    check {
+        dependsOn checkstyleNohttp
+    }
+}
